@@ -1,0 +1,15 @@
+target/  
+.mvn
+  
+.idea/  
+  
+*.iws  
+*.iml  
+*.ipr  
+  
+  
+# IntelliJ  
+/target
+
+*dependency-reduced-pom.xml
+*.log
