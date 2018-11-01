@@ -6,4 +6,5 @@
 
 ### commons: 公用的一些东西
 ### apis：根据注释生成api文档
+### db-utils: 数据库操作工具
 ### remote-utils: 远程操作工具 包括反响代理、ssh执行脚本
