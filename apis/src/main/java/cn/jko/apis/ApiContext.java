@@ -133,7 +133,7 @@ public class ApiContext {
             String javaClassName = fileName.substring(0, fileName.lastIndexOf("."));
 
             //api java 文件 转化的单元
-            CompilationUnit compilationUnit = ParseUtils.compilationUnit(f, javaClassName, getProjectSrcPath());
+            CompilationUnit compilationUnit = ParseUtils.compilationUnit(f);
             ClassOrInterfaceDeclaration classOrInterfaceDeclaration = ParseUtils.getClassOrInterfaceDeclaration(compilationUnit, javaClassName);
             if (apiClassFilter.isApiClass(f, classOrInterfaceDeclaration)) {
                 ApiInfo apiInfo = parseApiInfo(f, compilationUnit);
@@ -150,7 +150,7 @@ public class ApiContext {
         log.info(getClass().getSimpleName() + " 初始化结束。");
     }
 
-    public Set<String> getTitles() {
+    public Set<String> titles() {
         return apiInfoMap.keySet();
     }
 
@@ -165,15 +165,19 @@ public class ApiContext {
         }
 
         if (isRefresh) {
-            ApiInfo apiInfo = parseApiInfo(parseInfo.getJavaFile(), parseInfo.getCompilationUnit());
+            ApiInfo apiInfo = parseApiInfo(parseInfo.getJavaFile(), ParseUtils.compilationUnit(parseInfo.getJavaFile()));
             parseInfo.setApiInfo(apiInfo);
+            if (!apiInfo.getTitle().equals(title)) {
+                apiInfoMap.remove(title);
+                apiInfoMap.put(apiInfo.getTitle(), parseInfo);
+            }
         }
         return parseInfo.getApiInfo();
     }
 
     private ApiInfo parseApiInfo(File javaFile, CompilationUnit compilationUnit) {
         ApiInfo apiInfo = compilationUnit.accept(apiClassVisitor, apiClassResolver);
-        log.info("深度解析 : {}", javaFile.getAbsolutePath());
+        log.info("解析 : {}", javaFile.getAbsolutePath());
         if (apiInfo != null) {
             ClassTypeParseVisitorParam param = new ClassTypeParseVisitorParam();
             param.setProjectSrcPath(getProjectSrcPath());
