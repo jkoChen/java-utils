@@ -1,27 +1,24 @@
 package cn.jko.common;
 
 import lombok.extern.slf4j.Slf4j;
-import net.sf.cglib.proxy.Enhancer;
-import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
 /**
- * 返回
+ * 日志代理类
+ * <p>
+ * 代理类 使得调用类的所有方法时 记录日志
  *
  * @author j.chen@91kge.com  create on 2018/1/25
  */
+@Slf4j
 public class ExecuteLogProxyUtil extends AbstractProxyUtil {
-    Logger log;
 
     protected ExecuteLogProxyUtil(Object target) {
         super(target);
-        log = LoggerFactory.getLogger(target.getClass());
     }
 
     public static <T> T createProxy(T t) {
@@ -32,11 +29,11 @@ public class ExecuteLogProxyUtil extends AbstractProxyUtil {
     @Override
     public Object intercept(Object o, Method method, Object[] args, MethodProxy methodProxy) throws Throwable {
         try {
-            log.info("execute {}: {}", method.getName(), Arrays.stream(args).map(String::valueOf).collect(Collectors.joining(",")));
+            log.info("{} execute {}: {}", target.getClass(), method.getName(), Arrays.stream(args).map(String::valueOf).collect(Collectors.joining(",")));
             //执行目标对象的方法
             return methodProxy.invoke(target, args);
         } catch (Exception e) {
-            log.info("execute error {}: {}", method.getName(), Arrays.stream(args).map(String::valueOf).collect(Collectors.joining(",")));
+            log.info("{} execute error {}: {}", target.getClass(), method.getName(), Arrays.stream(args).map(String::valueOf).collect(Collectors.joining(",")));
             throw e;
         }
     }

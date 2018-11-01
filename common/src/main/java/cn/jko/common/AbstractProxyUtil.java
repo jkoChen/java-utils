@@ -4,6 +4,14 @@ import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 
 /**
+ * 代理工具类
+ * <p>
+ * 只需要继承该方法 实现  intercept 即可
+ * 可以通过 new AbstractProxyUtil(target).create();
+ * 或者 通过 AbstractProxyUtil.createProxy(util); 生成代理对象
+ * 子类还可以实现 createProxy(object); 来生成代理对象{@link ExecuteLogProxyUtil#createProxy(Object)}
+ *
+ *
  * @author j.chen@91kge.com  create on 2018/11/1
  */
 public abstract class AbstractProxyUtil implements MethodInterceptor {
@@ -18,12 +26,11 @@ public abstract class AbstractProxyUtil implements MethodInterceptor {
         return target;
     }
 
-    public Object create() {
+    public <T> T create() {
         return createProxy(this);
     }
 
-
-    protected static <T> T createProxy(AbstractProxyUtil util) {
+    public static <T, U extends AbstractProxyUtil> T createProxy(U util) {
         Class<?> tClass = util.getTarget().getClass();
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(tClass);
