@@ -22,7 +22,12 @@
             <artifactId>jsch</artifactId>
             <version>0.1.54</version>
         </dependency>
-
+        <dependency>
+            <groupId>cn.jko</groupId>
+            <artifactId>db-utils</artifactId>
+            <version>0.0.1</version>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 </project>
