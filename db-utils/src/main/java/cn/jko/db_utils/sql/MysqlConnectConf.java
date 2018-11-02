@@ -21,6 +21,6 @@ public class MysqlConnectConf extends ConnectionConf {
 
     @Override
     protected String getDriveName() {
-        return "com.mysql.jdbc.Driver";
+        return "com.mysql.cj.jdbc.Driver";
     }
 }

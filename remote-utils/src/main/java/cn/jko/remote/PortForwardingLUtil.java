@@ -24,15 +24,18 @@ public class PortForwardingLUtil extends SSHUtil {
             int mysql_assinged_port = 0;//端口映射 转发
             try {
                 mysql_assinged_port = session.setPortForwardingL(forwarding.getLport(), forwarding.getRhost(), forwarding.getRport());
-                log.info("{}_{}:{} -> localhost:{}", conf.getRemoteIp(), forwarding.getRhost(), forwarding.getRport(), mysql_assinged_port);
+                log.info("start port forwarding : {}_{}:{} -> localhost:{}", conf.getRemoteIp(), forwarding.getRhost(), forwarding.getRport(), mysql_assinged_port);
             } catch (JSchException e) {
-                log.error("portForwarding error.", e);
+                log.error("start port forwarding  error.", e);
             }
         }
 
     }
 
-    public void stop(){
+    public void stop() {
+        for (PortForwardingLConf.Forwarding forwarding : ((PortForwardingLConf) conf).getForwardings()) {
+            log.info("stop port forwarding : {}_{}:{} -> localhost:{}", conf.getRemoteIp(), forwarding.getRhost(), forwarding.getRport(), forwarding.getLport());
+        }
         disconnect();
     }
 }

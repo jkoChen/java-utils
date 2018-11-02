@@ -47,10 +47,10 @@ public class SSHUtil {
             }
             session.setConfig("StrictHostKeyChecking", "no");
             session.connect();
-            log.info(session.getServerVersion());//这里打印SSH服务器版本信息
-
+            log.info("login server {} success,server version {} ", conf.getRemoteIp(), session.getServerVersion());
             isConnect = true;
         } catch (JSchException e) {
+            log.info("login server {} error. {}", conf.getRemoteIp(), e.getLocalizedMessage());
         }
     }
 
