@@ -5,6 +5,8 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.UUID;
+
 /**
  * ssh 登陆工具
  *
@@ -16,6 +18,9 @@ public class SSHUtil {
     protected RemoteConf conf;
 
     protected Session session;
+
+    //标识登陆端
+    private UUID uuid;
 
     private boolean isConnect = false;
 
@@ -47,7 +52,8 @@ public class SSHUtil {
             }
             session.setConfig("StrictHostKeyChecking", "no");
             session.connect();
-            log.info("login server {} success,server version {} ", conf.getRemoteIp(), session.getServerVersion());
+            uuid = UUID.randomUUID();
+            log.info("login server {} success -- {} :server version {} ", conf.getRemoteIp(), uuid, session.getServerVersion());
             isConnect = true;
         } catch (JSchException e) {
             log.info("login server {} error. {}", conf.getRemoteIp(), e.getLocalizedMessage());
@@ -59,6 +65,7 @@ public class SSHUtil {
      */
     public void disconnect() {
         if (isConnect) {
+            log.info("disconnect server {} -- {}", conf.getRemoteIp(), uuid);
             session.disconnect();
             session = null;
             isConnect = false;
