@@ -32,6 +32,7 @@ public class CommandUtil extends SSHUtil {
         }
         BufferedReader reader = null;
         try {
+            log.info("exec cmd on host {} {}", session.getHost(), cmd);
             channel = (ChannelExec) session.openChannel("exec");
             channel.setCommand(cmd);
             channel.connect();
@@ -42,7 +43,7 @@ public class CommandUtil extends SSHUtil {
                 result.add(buf);
             }
         } catch (JSchException | IOException e) {
-            log.error("exec cmd {} error . {}", cmd, e.getLocalizedMessage());
+            log.info("exec cmd on host {} {} error . {}", session.getHost(), cmd, e.getLocalizedMessage());
         } finally {
             //使用完毕关闭管道
             try {
