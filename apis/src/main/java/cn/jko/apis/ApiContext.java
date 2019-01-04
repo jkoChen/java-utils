@@ -9,7 +9,10 @@ import cn.jko.apis.resolver.ApiClassResolver;
 import cn.jko.apis.resolver.ApiMethodResolver;
 import cn.jko.apis.result.ClassModel;
 import cn.jko.apis.utils.ParseUtils;
-import cn.jko.apis.visitor.*;
+import cn.jko.apis.visitor.ApiClassVisitor;
+import cn.jko.apis.visitor.ApiMethodVisitor;
+import cn.jko.apis.visitor.ApiReturnVisitor;
+import cn.jko.apis.visitor.ClassTypeParseVisitorParam;
 import cn.jko.common.FileUtils;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -18,8 +21,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.function.Consumer;
 
@@ -123,10 +126,8 @@ public class ApiContext {
         init(null);
     }
 
-    public void init(Consumer<ApiInfo> consumer) {
-        log.info(getClass().getSimpleName() + " 初始化开始。");
-         LinkedHashMap<String, ApiParseInfo> cacheApiInfoMap = new LinkedHashMap<>();
-
+    private void loopFile(Consumer<ApiParseInfo> apiInfoConsumer) {
+        log.info(getClass().getSimpleName() + " 遍历开始。");
         //遍历路径下的所有java文件
         FileUtils.listFile(new File(projectPath), (f, name) -> javaFileFilter.isJavaFile(f)).forEach(f -> {
             //f api 文件
@@ -140,18 +141,33 @@ public class ApiContext {
             if (apiClassFilter.isApiClass(f, classOrInterfaceDeclaration)) {
                 ApiInfo apiInfo = parseApiInfo(f, compilationUnit);
                 if (apiInfo != null) {
-                    cacheApiInfoMap.put(apiInfo.getTitle(), new ApiParseInfo(f, compilationUnit, apiInfo));
-                    if (consumer != null) {
-                        consumer.accept(apiInfo);
-                    }
+                    apiInfoConsumer.accept(new ApiParseInfo(f, compilationUnit, apiInfo));
                 }
-
-
             }
         });
+        log.info(getClass().getSimpleName() + " 遍历结束。");
+    }
+
+    public void refresh(Consumer<ApiInfo> consumer) {
+        LinkedHashMap<String, ApiParseInfo> tmp = new LinkedHashMap<>();
+        loopFileIntoMap(consumer, tmp);
         apiInfoMap.clear();
-        apiInfoMap.putAll(cacheApiInfoMap);
-        log.info(getClass().getSimpleName() + " 初始化结束。");
+        apiInfoMap.putAll(tmp);
+    }
+
+    private void loopFileIntoMap(Consumer<ApiInfo> consumer, Map<String, ApiParseInfo> map) {
+        loopFile(apiParseInfo -> {
+            if (apiParseInfo != null) {
+                map.put(apiParseInfo.getApiInfo().getTitle(), apiParseInfo);
+                if (consumer != null) {
+                    consumer.accept(apiParseInfo.getApiInfo());
+                }
+            }
+        });
+    }
+
+    public void init(Consumer<ApiInfo> consumer) {
+        loopFileIntoMap(consumer, apiInfoMap);
     }
 
     public Set<String> titles() {
