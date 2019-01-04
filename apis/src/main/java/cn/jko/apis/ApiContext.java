@@ -49,11 +49,9 @@ public class ApiContext {
     private ApiMethodResolver apiMethodResolver;
 
     private ConcurrentSkipListMap<String, ApiParseInfo> apiInfoMap;
-    private ConcurrentSkipListMap<String, ApiParseInfo> cacheApiInfoMap;
 
     public ApiContext(String projectPath, String srcPath) {
         apiInfoMap = new ConcurrentSkipListMap<>();
-        cacheApiInfoMap = new ConcurrentSkipListMap<>();
         javaFileFilter = JavaFileFilter.defaultJavaFileFilter();
         apiClassFilter = ApiClassFilter.defaultApiClassFilter();
         apiMethodFilter = ApiMethodFilter.defaultApiMethodFilter();
@@ -127,6 +125,8 @@ public class ApiContext {
 
     public void init(Consumer<ApiInfo> consumer) {
         log.info(getClass().getSimpleName() + " 初始化开始。");
+         LinkedHashMap<String, ApiParseInfo> cacheApiInfoMap = new LinkedHashMap<>();
+
         //遍历路径下的所有java文件
         FileUtils.listFile(new File(projectPath), (f, name) -> javaFileFilter.isJavaFile(f)).forEach(f -> {
             //f api 文件
@@ -163,7 +163,7 @@ public class ApiContext {
     }
 
     public ApiInfo getApiInfo(String title, boolean isRefresh) {
-        ApiParseInfo parseInfo = apiInfoMap.getOrDefault(title, cacheApiInfoMap.get(title));
+        ApiParseInfo parseInfo = apiInfoMap.get(title);
         if (parseInfo == null) {
             return null;
         }
