@@ -48,10 +48,12 @@ public class ApiContext {
     private ApiClassResolver apiClassResolver;
     private ApiMethodResolver apiMethodResolver;
 
-    private LinkedHashMap<String, ApiParseInfo> apiInfoMap;
+    private ConcurrentSkipListMap<String, ApiParseInfo> apiInfoMap;
+    private ConcurrentSkipListMap<String, ApiParseInfo> cacheApiInfoMap;
 
     public ApiContext(String projectPath, String srcPath) {
-        apiInfoMap = new LinkedHashMap<>();
+        apiInfoMap = new ConcurrentSkipListMap<>();
+        cacheApiInfoMap = new ConcurrentSkipListMap<>();
         javaFileFilter = JavaFileFilter.defaultJavaFileFilter();
         apiClassFilter = ApiClassFilter.defaultApiClassFilter();
         apiMethodFilter = ApiMethodFilter.defaultApiMethodFilter();
@@ -138,7 +140,7 @@ public class ApiContext {
             if (apiClassFilter.isApiClass(f, classOrInterfaceDeclaration)) {
                 ApiInfo apiInfo = parseApiInfo(f, compilationUnit);
                 if (apiInfo != null) {
-                    apiInfoMap.put(apiInfo.getTitle(), new ApiParseInfo(f, compilationUnit, apiInfo));
+                    cacheApiInfoMap.put(apiInfo.getTitle(), new ApiParseInfo(f, compilationUnit, apiInfo));
                     if (consumer != null) {
                         consumer.accept(apiInfo);
                     }
@@ -147,6 +149,8 @@ public class ApiContext {
 
             }
         });
+        apiInfoMap.clear();
+        apiInfoMap.putAll(cacheApiInfoMap);
         log.info(getClass().getSimpleName() + " 初始化结束。");
     }
 
@@ -159,7 +163,7 @@ public class ApiContext {
     }
 
     public ApiInfo getApiInfo(String title, boolean isRefresh) {
-        ApiParseInfo parseInfo = apiInfoMap.get(title);
+        ApiParseInfo parseInfo = apiInfoMap.getOrDefault(title, cacheApiInfoMap.get(title));
         if (parseInfo == null) {
             return null;
         }
