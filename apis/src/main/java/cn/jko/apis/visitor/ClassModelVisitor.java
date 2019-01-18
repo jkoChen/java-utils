@@ -87,7 +87,7 @@ public class ClassModelVisitor extends GenericVisitorAdapter<ClassModel, ClassTy
         });
         //遍历所有的字段 生成模型
         n.getFields().forEach(s -> {
-            if(!s.isStatic()){
+            if (!s.isStatic()) {
                 ClassTypeParseVisitorParam p = param;
                 VariableDeclarator v = s.getVariable(0);
                 if (v.getNameAsString().equals("SEPARATOR")) {
@@ -145,6 +145,9 @@ public class ClassModelVisitor extends GenericVisitorAdapter<ClassModel, ClassTy
             }
             String cl = type.asString();
             EnumModelType enumModelType = ParseUtils.unifyReturnType(cl);
+            if (type.isArrayType()) {
+                enumModelType = EnumModelType.ARRAY;
+            }
             model.setType(enumModelType);
             model.setName(var.getNameAsString());
             fieldDeclaration.getComment().ifPresent(v -> {
